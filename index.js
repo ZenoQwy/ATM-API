@@ -21,4 +21,7 @@ app.post("/notify", (req, res) => {
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Serveur prêt sur le port ${PORT}`);
+  console.log(
+    `Token configuré : ${process.env.SECRET_TOKEN ? "OUI (défini)" : "NON (utilise la valeur par défaut)"}`,
+  );
 });

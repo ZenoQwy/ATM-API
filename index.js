@@ -1,15 +1,13 @@
 const express = require("express");
-const axios = require("axios"); // Ajout d'axios
+const axios = require("axios");
 const app = express();
 app.use(express.json());
 
-// Tes variables d'environnement sur Render
 const MY_SECRET_TOKEN = process.env.SECRET_TOKEN;
 const ONESIGNAL_APP_ID = process.env.ONESIGNAL_APP_ID;
 const ONESIGNAL_REST_KEY = process.env.ONESIGNAL_REST_KEY;
 
 app.post("/notify", async (req, res) => {
-  // 1. Vérification du Token
   if (req.headers["x-auth-token"] !== MY_SECRET_TOKEN) {
     return res.status(403).end();
   }
@@ -19,17 +17,16 @@ app.post("/notify", async (req, res) => {
 
   console.log(`[${horodatage}] 🏠 Détection : ${playerName}`);
 
-  // 2. Envoi de la notification vers OneSignal
   try {
     await axios.post(
       "https://onesignal.com/api/v1/notifications",
       {
         app_id: ONESIGNAL_APP_ID,
-        included_segments: ["Total Subscriptions"], // Envoie à tous ceux qui ont l'app
+        included_segments: ["Total Subscriptions"],
         headings: { en: "⚠️ INTRUSION SKYBLOCK" },
         contents: { en: `${playerName} est dans ta base !` },
-        android_accent_color: "FF8C00", // Orange ATM
-        priority: 10, // Haute priorité
+        android_accent_color: "FF8C00",
+        priority: 10,
       },
       {
         headers: {

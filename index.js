@@ -25,11 +25,9 @@ app.post("/notify", async (req, res) => {
         included_segments: ["Total Subscriptions"],
         headings: { "en": "⚠️ INTRUSION SKYBLOCK" },
         contents: { "en": `${playerName} est dans ta base !` },
-        android_accent_color: "FF40E0D0", 
+        android_accent_color: "0F172A",
         small_icon: "ic_stat_onesignal_default",
         large_icon: "ic_launcher_round", 
-      
-        // 4. Priorité haute (pour que ça vibre direct)
         priority: 10
       },
       {

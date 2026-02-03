@@ -21,12 +21,16 @@ app.post("/notify", async (req, res) => {
     await axios.post(
       "https://onesignal.com/api/v1/notifications",
       {
-        app_id: ONESIGNAL_APP_ID,
+        app_id: "9ea4abf1-0eb3-4b17-98e6-bf80e7f9d136",
         included_segments: ["Total Subscriptions"],
-        headings: { en: "⚠️ INTRUSION SKYBLOCK" },
-        contents: { en: `${playerName} est dans ta base !` },
-        android_accent_color: "FF8C00",
-        priority: 10,
+        headings: { "en": "⚠️ INTRUSION SKYBLOCK" },
+        contents: { "en": `${playerName} est dans ta base !` },
+        android_accent_color: "FF40E0D0", 
+        small_icon: "ic_stat_onesignal_default",
+        large_icon: "ic_launcher_round", 
+      
+        // 4. Priorité haute (pour que ça vibre direct)
+        priority: 10
       },
       {
         headers: {

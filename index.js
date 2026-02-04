@@ -32,24 +32,37 @@ app.post("/alert", async (req, res) => {
     res.status(200).json({ status: "OK" });
 });
 
-// ROUTE HARMONISÉE : Reçoit le chat de Minecraft pour l'envoyer à Flutter
-app.post("/notify", (req, res) => {
+app.post("/notify", async (req, res) => {
     if (req.headers["x-auth-token"] !== MY_SECRET_TOKEN) return res.status(403).end();
-    const { playerName, message } = req.body;
     
+    const { playerName, message } = req.body;
     console.log(`[MC -> APP] ${playerName}: ${message}`);
+
     io.emit("mc_chat_message", { user: playerName, msg: message });
+
+    try {
+        await axios.post("https://onesignal.com/api/v1/notifications", {
+            app_id: "9ea4abf1-0eb3-4b17-98e6-bf80e7f9d136",
+            included_segments: ["Total Subscriptions"],
+            headings: { "en": `Message de ${playerName}` },
+            contents: { "en": message },
+            priority: 10
+        }, {
+            headers: { Authorization: `Basic ${ONESIGNAL_REST_KEY}` }
+        });
+    } catch (e) { 
+        console.error("Erreur OneSignal (Chat):", e.message); 
+    }
+
     res.status(200).json({ status: "OK" });
 });
 
-// ROUTE DE POLLING : Le PC Minecraft vient chercher ses messages ici
 app.get("/get-messages", (req, res) => {
     if (req.headers["x-auth-token"] !== MY_SECRET_TOKEN) return res.status(403).end();
-    const msg = pendingMessages.shift() || {}; // On prend le premier message et on le supprime de la pile
+    const msg = pendingMessages.shift() || {}; 
     res.json(msg);
 });
 
-// Réception des messages venant de l'App Flutter
 io.on("connection", (socket) => {
     socket.on("send_to_mc", (data) => {
         console.log(`[APP -> MC] Nouveau message stocké: ${data.text}`);

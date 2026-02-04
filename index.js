@@ -25,6 +25,7 @@ app.post("/alert", async (req, res) => {
         await axios.post("https://onesignal.com/api/v1/notifications", {
             app_id: "9ea4abf1-0eb3-4b17-98e6-bf80e7f9d136",
             included_segments: ["Total Subscriptions"],
+            android_accent_color: "FF0F172A",
             headings: { "en": "INTRUSION SKYBLOCK" },
             contents: { "en": `${playerName} est dans ta base !` }
         }, { headers: { Authorization: `Basic ${ONESIGNAL_REST_KEY}` } });
@@ -44,8 +45,9 @@ app.post("/notify", async (req, res) => {
         await axios.post("https://onesignal.com/api/v1/notifications", {
             app_id: "9ea4abf1-0eb3-4b17-98e6-bf80e7f9d136",
             included_segments: ["Total Subscriptions"],
-            headings: { "en": `Message de ${playerName}` },
-            contents: { "en": message },
+            android_accent_color: "FF0F172A",
+            headings: { "en": `[ATM10 To The Sky] Nouveau message` },
+            contents: { "en": `${playerName}: ${message}`},
             priority: 10
         }, {
             headers: { Authorization: `Basic ${ONESIGNAL_REST_KEY}` }

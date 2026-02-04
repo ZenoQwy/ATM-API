@@ -16,7 +16,6 @@ const ONESIGNAL_REST_KEY = process.env.ONESIGNAL_REST_KEY;
 
 let pendingMessages = [];
 
-// Route pour les alertes (Intrusion)
 app.post("/alert", async (req, res) => {
     if (req.headers["x-auth-token"] !== MY_SECRET_TOKEN) return res.status(403).end();
     const { playerName } = req.body;
@@ -46,7 +45,7 @@ app.post("/notify", async (req, res) => {
             app_id: "9ea4abf1-0eb3-4b17-98e6-bf80e7f9d136",
             included_segments: ["Total Subscriptions"],
             android_accent_color: "FF0F172A",
-            headings: { "en": `[ATM10 To The Sky] Nouveau message` },
+            headings: { "en": `Nouveau message` },
             contents: { "en": `${playerName}: ${message}`},
             priority: 10
         }, {

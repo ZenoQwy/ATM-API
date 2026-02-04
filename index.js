@@ -25,6 +25,7 @@ app.post("/alert", async (req, res) => {
             app_id: "9ea4abf1-0eb3-4b17-98e6-bf80e7f9d136",
             included_segments: ["Total Subscriptions"],
             android_accent_color: "FF0F172A",
+            data: { "type": "intrusion" },
             headings: { "en": "INTRUSION SKYBLOCK" },
             contents: { "en": `${playerName} est dans ta base !` }
         }, { headers: { Authorization: `Basic ${ONESIGNAL_REST_KEY}` } });
@@ -45,6 +46,7 @@ app.post("/notify", async (req, res) => {
             app_id: "9ea4abf1-0eb3-4b17-98e6-bf80e7f9d136",
             included_segments: ["Total Subscriptions"],
             android_accent_color: "FF0F172A",
+            data: { "type": "chat" },
             headings: { "en": `Nouveau message` },
             contents: { "en": `${playerName}: ${message}`},
             priority: 10

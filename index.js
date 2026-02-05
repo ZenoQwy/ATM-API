@@ -15,6 +15,7 @@ const MY_SECRET_TOKEN = process.env.SECRET_TOKEN;
 const ONESIGNAL_REST_KEY = process.env.ONESIGNAL_REST_KEY;
 
 let pendingMessages = [];
+let onlinePlayers = [];
 
 app.post("/alert", async (req, res) => {
     if (req.headers["x-auth-token"] !== MY_SECRET_TOKEN) return res.status(403).end();
@@ -32,6 +33,38 @@ app.post("/alert", async (req, res) => {
     } catch (e) { console.error("Erreur OneSignal", e.message); }
     res.status(200).json({ status: "OK" });
 });
+
+app.post("/update-players", async (req, res) => {
+    if (req.headers["x-auth-token"] !== MY_SECRET_TOKEN) return res.status(403).end();
+    
+    const { action, playerName, players } = req.body;
+
+    if (action === "reset") {
+        onlinePlayers = players || [];
+        console.log("Liste réinitialisée :", onlinePlayers);
+    } else if (action === "join") {
+        if (!onlinePlayers.includes(playerName)) onlinePlayers.push(playerName);
+        sendNotification(`🚀 ${playerName} a rejoint le serveur !`, "join");
+    } else if (action === "leave") {
+        onlinePlayers = onlinePlayers.filter(p => p !== playerName);
+        sendNotification(`👋 ${playerName} a quitté le serveur.`, "leave");
+    }
+
+    io.emit("player_list_update", onlinePlayers);
+    res.status(200).json({ status: "OK" });
+});
+
+async function sendNotification(text, type) {
+    try {
+        await axios.post("https://onesignal.com/api/v1/notifications", {
+            app_id: "9ea4abf1-0eb3-4b17-98e6-bf80e7f9d136",
+            included_segments: ["Total Subscriptions"],
+            headings: { "en": "Statut Serveur" },
+            contents: { "en": text },
+            data: { "type": type }
+        }, { headers: { Authorization: `Basic ${ONESIGNAL_REST_KEY}` } });
+    } catch (e) { console.error("Erreur OneSignal Status:", e.message); }
+}
 
 app.post("/notify", async (req, res) => {
     if (req.headers["x-auth-token"] !== MY_SECRET_TOKEN) return res.status(403).end();

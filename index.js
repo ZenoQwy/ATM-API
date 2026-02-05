@@ -82,7 +82,7 @@ io.on("connection", (socket) => {
     socket.emit("chat_history", chatHistory);
     socket.on("send_to_mc", (data) => {
         pendingMessages.push({ message: data.text });
-        const appMsg = { user: "Admin", msg: data.text, timestamp: Date.now() };
+        const appMsg = { user: "DASHBOARD", msg: data.text, timestamp: Date.now() };
         chatHistory.push(appMsg);
         io.emit("mc_chat_message", appMsg);
     });

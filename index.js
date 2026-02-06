@@ -88,9 +88,9 @@ app.post("/alert", (req, res) => {
 app.post("/update-players", (req, res) => {
     const { action, playerName, players } = req.body;
     if (action === "reset") {
-        onlinePlayers = players || [];
+        onlinePlayers = Array.isArray(players) ? players : [];
     } else if (action === "join" && playerName) {
-        if (!onlinePlayers.includes(playerName)) {
+        if (Array.isArray(onlinePlayers) && !onlinePlayers.includes(playerName)) {
             onlinePlayers.push(playerName);
             sendOS("Activité Serveur", `${playerName} a rejoint le serveur.`, "join");
         }

@@ -2,9 +2,14 @@ const express = require("express");
 const axios = require("axios");
 const http = require("http");
 const { Server } = require("socket.io");
+
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+const io = new Server(server, { 
+    cors: { origin: "*" },
+    pingTimeout: 60000,
+    pingInterval: 25000
+});
 
 app.use(express.json());
 
@@ -35,8 +40,11 @@ const sendOS = async (title, text, type, priority = 10) => {
             contents: { en: text },
             data: { type },
             priority,
-            android_accent_color: "3498DB" 
-        }, { headers: { Authorization: `Basic ${AUTH_CONFIG.osKey}` } });
+            android_accent_color: "3498DB"
+        }, { 
+            headers: { Authorization: `Basic ${AUTH_CONFIG.osKey}` },
+            timeout: 5000
+        });
     } catch (e) {
         console.error(`OS Error [${type}]:`, e.message);
     }
@@ -50,7 +58,7 @@ const updateActivity = (req, res, next) => {
 app.use(updateActivity);
 
 app.use((req, res, next) => {
-    if (req.path === "/health") return next();
+    if (req.path === "/health" || req.path === "/wake") return next();
     if (req.headers["x-auth-token"] !== AUTH_CONFIG.token) {
         return res.status(403).json({ error: "Unauthorized" });
     }
@@ -64,6 +72,10 @@ app.get("/health", (req, res) => {
         lastActivity,
         onlinePlayers: onlinePlayers.length
     });
+});
+
+app.get("/wake", (req, res) => {
+    res.json({ status: "awake", timestamp: Date.now() });
 });
 
 app.post("/alert", (req, res) => {
@@ -107,6 +119,18 @@ app.get("/get-messages", (req, res) => {
     res.json(msg || { message: null });
 });
 
+app.post("/send-message", (req, res) => {
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: "Missing message" });
+    
+    pendingMessages.push({ message });
+    const appMsg = { user: "DASHBOARD", msg: message, timestamp: Date.now() };
+    chatHistory.push(appMsg);
+    io.emit("mc_chat_message", appMsg);
+    
+    res.json({ status: "OK" });
+});
+
 app.get("/status", (req, res) => {
     res.json({
         onlinePlayers,
@@ -119,14 +143,16 @@ io.on("connection", (socket) => {
     cleanHistory();
     socket.emit("player_list_update", onlinePlayers);
     socket.emit("chat_history", chatHistory);
+    
     socket.on("send_to_mc", (data) => {
-        if (data && data.text) {
+        if (data?.text) {
             pendingMessages.push({ message: data.text });
             const appMsg = { user: "DASHBOARD", msg: data.text, timestamp: Date.now() };
             chatHistory.push(appMsg);
             io.emit("mc_chat_message", appMsg);
         }
     });
+    
     socket.on("ping", () => {
         socket.emit("pong", { timestamp: Date.now() });
     });
